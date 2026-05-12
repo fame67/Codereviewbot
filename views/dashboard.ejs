@@ -1,3 +1,4 @@
+```html id="kq81nx"
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,24 +23,24 @@
 
     <!-- Header -->
     <div class="dash-header">
-      <h1>Tumhare Repos</h1>
-      <p>Kisi bhi repo pe bot enable karo — webhook automatically set ho jaayega</p>
+      <h1>Your Repositories</h1>
+      <p>Enable the bot on any repository — the webhook will be configured automatically</p>
     </div>
 
     <!-- Webhook setup instructions -->
     <div class="setup-box">
-      <h3>⚙️ Manual Setup (ek baar karna hai)</h3>
+      <h3>⚙️ Manual Setup (one-time setup)</h3>
       <ol>
-        <li>Jis repo pe bot chahiye uski <strong>Settings → Webhooks → Add webhook</strong> pe jao</li>
+        <li>Go to <strong>Settings → Webhooks → Add webhook</strong> in the repository where you want the bot</li>
         <li>Payload URL: <code><%= baseUrl %>/webhook</code></li>
         <li>Content type: <code>application/json</code></li>
-        <li>Secret: apna <code>GITHUB_WEBHOOK_SECRET</code> daalo</li>
-        <li>Events: <strong>Pull requests</strong> select karo</li>
-        <li>Save karo — bas! Bot active hai 🎉</li>
+        <li>Enter your <code>GITHUB_WEBHOOK_SECRET</code> as the secret</li>
+        <li>Select <strong>Pull requests</strong> events</li>
+        <li>Click Save — your bot is now active 🎉</li>
       </ol>
     </div>
 
-    <!-- Repos list -->
+    <!-- Repositories list -->
     <div class="repos-grid">
       <% repos.forEach(repo => { %>
         <div class="repo-card">
@@ -65,12 +66,13 @@
 
           <div class="repo-footer">
             <span class="repo-updated">Updated: <%= repo.updatedAt %></span>
-            
+
+            <a
               href="<%= repo.url %>/settings/hooks"
               target="_blank"
               class="btn-setup"
             >
-              Webhook Setup →
+              Setup Webhook →
             </a>
           </div>
         </div>
@@ -81,3 +83,4 @@
 
 </body>
 </html>
+```
