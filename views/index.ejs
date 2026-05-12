@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,16 +16,16 @@
       <div class="bot-icon">🤖</div>
       <h1>CodeReviewBot</h1>
       <p class="tagline">
-        GitHub PR khulte hi AI automatically code review kar deta hai.<br>
-        Security issues, bugs, performance problems — sab catch hote hain.
+        AI automatically reviews your GitHub PRs as soon as they are opened.<br>
+        Security issues, bugs, and performance problems are detected instantly.
       </p>
 
-      <!-- Error message agar koi tha -->
+      <!-- Error message if any -->
       <% if (error) { %>
         <div class="error-banner">⚠️ <%= error %></div>
       <% } %>
 
-      <!-- GitHub se Login -->
+      <!-- Login with GitHub -->
       <a href="/auth/login" class="btn-github">
         <svg height="20" viewBox="0 0 16 16" width="20" fill="currentColor">
           <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
@@ -39,7 +40,6 @@
         Login with GitHub
       </a>
 
-      <p class="note">Free hai. Credit card nahi chahiye.</p>
     </div>
 
     <!-- Features -->
@@ -47,42 +47,42 @@
       <div class="feature-card">
         <div class="feature-icon">🔒</div>
         <h3>Security Check</h3>
-        <p>SQL injection, XSS, hardcoded secrets — automatically detect hote hain</p>
+        <p>SQL injection, XSS, and hardcoded secrets are detected automatically</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
         <h3>Performance</h3>
-        <p>N+1 queries, memory leaks, blocking operations pakde jaate hain</p>
+        <p>N+1 queries, memory leaks, and blocking operations are identified</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🐛</div>
         <h3>Bug Detection</h3>
-        <p>Logic errors, null pointers, unhandled edge cases</p>
+        <p>Logic errors, null pointers, and unhandled edge cases are caught</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">💬</div>
         <h3>Inline Comments</h3>
-        <p>Exact line pe comment — koi confusion nahi</p>
+        <p>Comments are added directly on the exact line for better clarity</p>
       </div>
     </div>
 
     <!-- How it works -->
     <div class="how-it-works">
-      <h2>Kaise kaam karta hai?</h2>
+      <h2>How does it work?</h2>
       <div class="steps">
         <div class="step">
           <span class="step-num">1</span>
-          <p>Login karo aur apna repo select karo</p>
+          <p>Login and select your repository</p>
         </div>
         <div class="step-arrow">→</div>
         <div class="step">
           <span class="step-num">2</span>
-          <p>Repo mein webhook automatic set hoga</p>
+          <p>A webhook is automatically configured in your repository</p>
         </div>
         <div class="step-arrow">→</div>
         <div class="step">
           <span class="step-num">3</span>
-          <p>Koi bhi PR kholo — bot review kar dega</p>
+          <p>Open any PR and the bot will review it instantly</p>
         </div>
       </div>
     </div>
@@ -91,3 +91,4 @@
 
 </body>
 </html>
+```
