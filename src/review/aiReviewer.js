@@ -6,13 +6,13 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
 })
 
-// export yahan hai — neeche module.exports ki zaroorat nahi
+// Export is already here — no need for module.exports below
 export async function reviewPR(payload) {
   const pullRequest = payload.pull_request
   const repository  = payload.repository
   const token       = process.env.GITHUB_TOKEN
 
-  console.log(`[Bot] Review shuru: PR #${pullRequest.number} in ${repository.full_name}`)
+  console.log(`[Bot] Review started: PR #${pullRequest.number} in ${repository.full_name}`)
 
   const rawDiff = await fetchDiff(
     repository.full_name,
@@ -21,7 +21,7 @@ export async function reviewPR(payload) {
   )
 
   const chunks = parseDiffIntoChunks(rawDiff)
-  console.log(`[Bot] ${chunks.length} chunks milein review ke liye`)
+  console.log(`[Bot] ${chunks.length} chunks found for review`)
 
   if (chunks.length === 0) {
     await postGeneralComment({
@@ -29,7 +29,7 @@ export async function reviewPR(payload) {
       owner:    repository.owner.login,
       repo:     repository.name,
       prNumber: pullRequest.number,
-      body:     '✅ **CodeReviewBot:** Koi reviewable code change nahi mila.'
+      body:     '✅ **CodeReviewBot:** No reviewable code changes found.'
     })
     return
   }
@@ -50,7 +50,7 @@ export async function reviewPR(payload) {
       owner:    repository.owner.login,
       repo:     repository.name,
       prNumber: pullRequest.number,
-      body:     '✅ **CodeReviewBot:** LGTM! Koi major issue nahi mila.'
+      body:     '✅ **CodeReviewBot:** LGTM! No major issues found.'
     })
   } else {
     await postReviewComments({
@@ -61,51 +61,51 @@ export async function reviewPR(payload) {
       commitSha: pullRequest.head.sha,
       comments:  allComments,
     })
-    console.log(`[Bot] ${allComments.length} comments post kiye`)
+    console.log(`[Bot] Posted ${allComments.length} comments`)
   }
 }
 
 async function reviewOneChunk(chunk, pullRequest) {
   const addedLineNumbers = chunk.addedLines.map(l => l.lineNumber).join(', ')
 
-  const prompt = `Tu ek experienced senior software engineer hai jo code review kar raha hai.
+  const prompt = `You are an experienced senior software engineer reviewing code.
 
 PR Title: "${pullRequest.title}"
 File: ${chunk.filename}
-Naye/changed lines: ${addedLineNumbers}
+New/changed lines: ${addedLineNumbers}
 
 Code:
 \`\`\`
 ${chunk.contextCode}
 \`\`\`
 
-In chezon pe dhyan de:
+Focus on these things:
 1. Security issues (SQL injection, XSS, hardcoded passwords)
 2. Performance (N+1 queries, memory leaks, blocking operations)
 3. Bugs (wrong logic, null pointer, unhandled errors)
 4. Bad practices (console.log in production, dead code)
 
-SIRF YE JSON FORMAT RETURN KAR — kuch aur mat likho:
+RETURN ONLY THIS JSON FORMAT — do not write anything else:
 [
   {
     "line": <line number from: ${addedLineNumbers}>,
     "severity": "low" | "medium" | "high" | "critical",
     "category": "security" | "performance" | "bug" | "practice",
-    "comment": "Kya issue hai aur kaise fix karo"
+    "comment": "What the issue is and how to fix it"
   }
 ]
 
-Agar koi issue nahi: []`
+If there are no issues: []`
 
   let responseText
 
   try {
     const response = await groq.chat.completions.create({
-     model: 'llama-3.3-70b-versatile',
+      model: 'llama-3.3-70b-versatile',
       messages: [
         {
           role:    'system',
-          content: 'Tu ek senior software engineer hai. SIRF valid JSON array return kar, kuch aur nahi.'
+          content: 'You are a senior software engineer. Return ONLY a valid JSON array and nothing else.'
         },
         {
           role:    'user',
@@ -134,7 +134,7 @@ Agar koi issue nahi: []`
     if (!Array.isArray(issues)) return []
 
   } catch (err) {
-    console.error(`[Bot] JSON parse fail:`, responseText)
+    console.error(`[Bot] JSON parse failed:`, responseText)
     return []
   }
 
@@ -166,5 +166,5 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// ❌ module.exports NAHI — ye file ES Module hai
-// ✅ Export upar function ke saath ho chuka hai: export async function reviewPR
+// ❌ NO module.exports — this file is an ES Module
+// ✅ Already exported above with the function: export async function reviewPR
