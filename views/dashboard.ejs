@@ -16,9 +16,7 @@
 
       <span><%= user.name || user.login %></span>
 
-      <a href="/auth/logout" class="btn-logout">
-        Logout
-      </a>
+      <a href="/auth/logout" class="btn-logout">Logout</a>
     </div>
   </nav>
 
@@ -26,7 +24,7 @@
 
     <div class="dash-header">
       <h1>Your Repositories</h1>
-      <p>Enable the bot on any repository — webhook will be configured automatically.</p>
+      <p>Enable the bot on any repository — the webhook will be configured automatically.</p>
     </div>
 
     <div class="repos-grid">
@@ -73,20 +71,30 @@
               Updated: <%= repo.updatedAt %>
             </span>
 
-            <button
-              class="btn-enable"
-              id="btn-<%= repo.id %>"
-              onclick="enableBot('<%= repo.fullName %>', '<%= repo.id %>')"
-            >
-              🤖 Enable Bot
-            </button>
+            <div class="btn-group">
 
+              <!-- Enable Bot button -->
+              <button
+                class="btn-enable"
+                id="btn-<%= repo.id %>"
+                onclick="enableBot('<%= repo.fullName %>', '<%= repo.id %>')"
+              >
+                🤖 Enable Bot
+              </button>
+
+              <!-- Open directly on GitHub -->
+              <a
+                href="https://github.com/<%= repo.fullName %>"
+                target="_blank"
+                class="btn-setup"
+              >
+                Open on GitHub →
+              </a>
+
+            </div>
           </div>
 
-          <div
-            class="status-msg"
-            id="status-<%= repo.id %>"
-          ></div>
+          <div class="status-msg" id="status-<%= repo.id %>"></div>
 
         </div>
 
@@ -99,24 +107,20 @@
 
     async function enableBot(repoFullName, repoId) {
 
-      var btn = document.getElementById('btn-' + repoId)
-
+      var btn    = document.getElementById('btn-' + repoId)
       var status = document.getElementById('status-' + repoId)
 
-      btn.disabled = true
-      btn.textContent = 'Setting up...'
-
+      btn.disabled       = true
+      btn.textContent    = '⏳ Setting up...'
       status.textContent = ''
 
       try {
 
         var res = await fetch('/repos/select', {
-          method: 'POST',
-
+          method:  'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-
           body: JSON.stringify({
             repoFullName: repoFullName
           })
@@ -126,35 +130,39 @@
 
         if (data.success) {
 
-          btn.textContent = 'Bot Enabled'
-
+          btn.textContent      = '✅ Bot Enabled'
           btn.style.background = '#22c55e'
+          btn.disabled         = true
 
           status.textContent =
-            'Webhook configured successfully! Open a PR and the bot will review it automatically.'
+            '✅ Webhook has been configured successfully! Now open a PR — the bot will review it.'
 
           status.style.color = '#22c55e'
 
+          // Automatically open GitHub repository
+          window.open(
+            'https://github.com/' + repoFullName,
+            '_blank'
+          )
+
         } else {
 
-          btn.disabled = false
-
-          btn.textContent = 'Enable Bot'
+          btn.disabled       = false
+          btn.textContent    = '🤖 Enable Bot'
 
           status.textContent =
-            'Error: ' + data.message
+            '❌ Error: ' + data.message
 
           status.style.color = '#ef4444'
         }
 
       } catch(err) {
 
-        btn.disabled = false
-
-        btn.textContent = 'Enable Bot'
+        btn.disabled    = false
+        btn.textContent = '🤖 Enable Bot'
 
         status.textContent =
-          'Network error. Please try again.'
+          '❌ Network error. Please try again.'
 
         status.style.color = '#ef4444'
       }
