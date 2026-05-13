@@ -17,50 +17,41 @@
 export async function authRoutes(app) {
 
   // ---- STEP 1: Login ----
-  // User yahan aata hai → GitHub pe bhejo
   app.get('/auth/login', async (req, reply) => {
-    // GitHub OAuth URL
-    // scope=repo → user ke repos access karne ki permission
     const githubAuthUrl = new URL('https://github.com/login/oauth/authorize')
-    githubAuthUrl.searchParams.set('client_id', process.env.GITHUB_CLIENT_ID)
-    githubAuthUrl.searchParams.set('scope',     'repo read:user')
-    githubAuthUrl.searchParams.set('redirect_uri',
-      `${process.env.BASE_URL}/auth/callback`
-    )
+    githubAuthUrl.searchParams.set('client_id',    process.env.GITHUB_CLIENT_ID)
+    githubAuthUrl.searchParams.set('scope',        'repo read:user admin:repo_hook')
+    githubAuthUrl.searchParams.set('redirect_uri', `${process.env.BASE_URL}/auth/callback`)
 
-    // CSRF protection ke liye random state
-    // Callback mein verify karenge
     const state = Math.random().toString(36).slice(2)
     req.session.oauthState = state
-    githubAuthUrl.searchParams.set('scope', 'repo read:user admin:repo_hook')
+    githubAuthUrl.searchParams.set('state', state)
 
+    // Session save karo redirect se pehle
+    await req.session.save()
 
     return reply.redirect(githubAuthUrl.toString())
   })
 
   // ---- STEP 2: Callback ----
-  // GitHub yahan redirect karta hai login ke baad
   app.get('/auth/callback', async (req, reply) => {
     const { code, state, error } = req.query
 
-    // User ne cancel kiya
     if (error) {
       return reply.redirect('/?error=login_cancelled')
     }
 
-    // CSRF check — state match karna chahiye
     if (state !== req.session.oauthState) {
       return reply.redirect('/?error=invalid_state')
     }
 
-    // ---- Code → Access Token exchange ----
     const tokenResponse = await fetch(
       'https://github.com/login/oauth/access_token',
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Accept:         'application/json'  // JSON format mein chahiye
+          Accept:         'application/json'
         },
         body: JSON.stringify({
           client_id:     process.env.GITHUB_CLIENT_ID,
@@ -79,7 +70,6 @@ export async function authRoutes(app) {
 
     const accessToken = tokenData.access_token
 
-    // ---- Access Token → User Info ----
     const userResponse = await fetch('https://api.github.com/user', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -89,16 +79,16 @@ export async function authRoutes(app) {
 
     const user = await userResponse.json()
 
-    // ---- Session mein save karo ----
     req.session.user = {
       id:        user.id,
-      login:     user.login,       // GitHub username
-      name:      user.name,        // Full name
-      avatarUrl: user.avatar_url,  // Profile picture
-      token:     accessToken,      // Repos access ke liye
+      login:     user.login,
+      name:      user.name,
+      avatarUrl: user.avatar_url,
+      token:     accessToken,
     }
 
-    // Dashboard pe bhejo
+    await req.session.save()
+
     return reply.redirect('/dashboard')
   })
 
