@@ -15,13 +15,16 @@ export async function dashboardRoutes(app) {
     if (req.session.user) {
       return reply.redirect('/dashboard')
     }
+
     const error = req.query.error
+
     const errorMessages = {
-      login_cancelled: 'Login cancel kar diya. Dobara try karo.',
-      token_failed:    'GitHub se connect karne mein problem aayi.',
-      login_required:  'Pehle login karo.',
-      invalid_state:   'Security error. Dobara try karo.',
+      login_cancelled: 'Login was cancelled. Please try again.',
+      token_failed:    'There was a problem connecting with GitHub.',
+      login_required:  'Please login first.',
+      invalid_state:   'Security error. Please try again.',
     }
+
     return reply.view('index.ejs', {
       error: errorMessages[error] || null
     })
@@ -29,20 +32,24 @@ export async function dashboardRoutes(app) {
 
   // ---- Dashboard ----
   app.get('/dashboard', { preHandler: requireLogin }, async (req, reply) => {
+
     const user  = req.session.user
     const token = user.token
 
     const reposResponse = await fetch(
       'https://api.github.com/user/repos?sort=updated&per_page=20&type=owner',
       {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
     )
+
     const repos = await reposResponse.json()
 
     if (!Array.isArray(repos)) {
       return reply.view('error.ejs', {
-        message: 'Repos fetch karne mein problem aayi.'
+        message: 'There was a problem fetching repositories.'
       })
     }
 
@@ -63,17 +70,38 @@ export async function dashboardRoutes(app) {
 
   // ---- Repo Select ----
   app.post('/repos/select', { preHandler: requireLogin }, async (req, reply) => {
-    const { repoFullName } = req.body
-    const token = req.session.user.token
 
-    if (!repoFullName) {
-      return reply.code(400).send({ success: false, message: 'Repo name missing hai' })
+    // Parse body — fixes buffer issue
+    let repoFullName
+
+    try {
+      const parsed =
+        typeof req.body === 'string'
+          ? JSON.parse(req.body)
+          : Buffer.isBuffer(req.body)
+            ? JSON.parse(req.body.toString('utf-8'))
+            : req.body
+
+      repoFullName = parsed.repoFullName
+
+    } catch (err) {
+      return reply
+        .code(400)
+        .send({ success: false, message: 'Body parse error' })
     }
 
-    // Token save karo
+    if (!repoFullName) {
+      return reply
+        .code(400)
+        .send({ success: false, message: 'Repository name is missing' })
+    }
+
+    const token = req.session.user.token
+
+    // Save token
     saveToken(repoFullName, token)
 
-    // Pehle existing webhooks check karo
+    // Check existing webhooks
     const existingRes = await fetch(
       `https://api.github.com/repos/${repoFullName}/hooks`,
       {
@@ -86,30 +114,37 @@ export async function dashboardRoutes(app) {
 
     const existingHooks = await existingRes.json()
 
-    // Agar webhook already hai toh dobara mat banao
     if (Array.isArray(existingHooks)) {
+
       const alreadyExists = existingHooks.some(h =>
         h.config?.url === `${process.env.BASE_URL}/webhook`
       )
+
       if (alreadyExists) {
-        return reply.send({ success: true, message: 'Webhook already set hai! PR kholo — bot review karega.' })
+        return reply.send({
+          success: true,
+          message: 'Webhook is already configured! Open a PR — the bot will review it.'
+        })
       }
     }
 
-    // Naya webhook banao
+    // Create new webhook
     const response = await fetch(
       `https://api.github.com/repos/${repoFullName}/hooks`,
       {
         method: 'POST',
+
         headers: {
-          Authorization: `Bearer ${token}`,
-          Accept:        'application/vnd.github.v3+json',
+          Authorization:  `Bearer ${token}`,
+          Accept:         'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
         },
+
         body: JSON.stringify({
           name:   'web',
           active: true,
           events: ['pull_request'],
+
           config: {
             url:          `${process.env.BASE_URL}/webhook`,
             content_type: 'json',
@@ -123,10 +158,22 @@ export async function dashboardRoutes(app) {
     const data = await response.json()
 
     if (response.ok) {
-      return reply.send({ success: true, message: 'Webhook set ho gaya! Ab PR kholo — bot review karega.' })
+
+      return reply.send({
+        success: true,
+        message: 'Webhook has been configured successfully! Now open a PR — the bot will review it.'
+      })
+
     } else {
+
       console.error('Webhook error:', data)
-      return reply.code(400).send({ success: false, message: data.message || 'Webhook set karne mein error aaya' })
+
+      return reply
+        .code(400)
+        .send({
+          success: false,
+          message: data.message || 'An error occurred while setting up the webhook'
+        })
     }
   })
 }
