@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +8,6 @@
 </head>
 <body>
 
-  <!-- Navbar -->
   <nav class="navbar">
     <div class="nav-brand">🤖 CodeReviewBot</div>
 
@@ -24,52 +22,38 @@
     </div>
   </nav>
 
-  <!-- Dashboard -->
   <div class="dashboard">
 
     <div class="dash-header">
       <h1>Your Repositories</h1>
-<<<<<<< HEAD
-      <p>Enable the bot on any repository — the webhook will be configured automatically</p>
-    </div>
-
-    <!-- Webhook setup instructions -->
-    <div class="setup-box">
-      <h3>⚙️ Manual Setup (one-time setup)</h3>
-      <ol>
-        <li>Go to <strong>Settings → Webhooks → Add webhook</strong> in the repository where you want the bot</li>
-        <li>Payload URL: <code><%= baseUrl %>/webhook</code></li>
-        <li>Content type: <code>application/json</code></li>
-        <li>Enter your <code>GITHUB_WEBHOOK_SECRET</code> as the secret</li>
-        <li>Select <strong>Pull requests</strong> events</li>
-        <li>Click Save — your bot is now active 🎉</li>
-      </ol>
-    </div>
-
-    <!-- Repositories list -->
-=======
       <p>Enable the bot on any repository — webhook will be configured automatically.</p>
     </div>
 
-    <!-- Repositories -->
->>>>>>> 928a1bf (Updated dashboard UI and improved upload flow)
     <div class="repos-grid">
 
-      <% repos.forEach(repo => { %>
+      <% for(var i = 0; i < repos.length; i++) { %>
 
-        <div class="repo-card" id="card-<%= repo.id %>">
+        <% var repo = repos[i] %>
+
+        <div class="repo-card">
 
           <div class="repo-header">
 
             <div class="repo-name">
-              <%= repo.isPrivate ? '🔒' : '📁' %>
+
+              <% if(repo.isPrivate) { %>
+                🔒
+              <% } else { %>
+                📁
+              <% } %>
 
               <a href="<%= repo.url %>" target="_blank">
                 <%= repo.name %>
               </a>
+
             </div>
 
-            <% if (repo.language) { %>
+            <% if(repo.language) { %>
               <span class="lang-badge">
                 <%= repo.language %>
               </span>
@@ -77,35 +61,18 @@
 
           </div>
 
-          <% if (repo.description) { %>
+          <% if(repo.description) { %>
             <p class="repo-desc">
               <%= repo.description %>
             </p>
           <% } %>
 
           <div class="repo-footer">
-<<<<<<< HEAD
-            <span class="repo-updated">Updated: <%= repo.updatedAt %></span>
-
-            <a
-              href="<%= repo.url %>/settings/hooks"
-              target="_blank"
-              class="btn-setup"
-            >
-              Setup Webhook →
-            </a>
-          </div>
-        </div>
-      <% }) %>
-    </div>
-=======
->>>>>>> 928a1bf (Updated dashboard UI and improved upload flow)
 
             <span class="repo-updated">
               Updated: <%= repo.updatedAt %>
             </span>
 
-            <!-- Enable Bot Button -->
             <button
               class="btn-enable"
               id="btn-<%= repo.id %>"
@@ -116,12 +83,14 @@
 
           </div>
 
-          <!-- Status Message -->
-          <div class="status-msg" id="status-<%= repo.id %>"></div>
+          <div
+            class="status-msg"
+            id="status-<%= repo.id %>"
+          ></div>
 
         </div>
 
-      <% }) %>
+      <% } %>
 
     </div>
   </div>
@@ -130,17 +99,18 @@
 
     async function enableBot(repoFullName, repoId) {
 
-      const btn = document.getElementById('btn-' + repoId)
-      const status = document.getElementById('status-' + repoId)
+      var btn = document.getElementById('btn-' + repoId)
 
-      // Loading State
+      var status = document.getElementById('status-' + repoId)
+
       btn.disabled = true
-      btn.textContent = '⏳ Setting up...'
+      btn.textContent = 'Setting up...'
+
       status.textContent = ''
 
       try {
 
-        const res = await fetch('/repos/select', {
+        var res = await fetch('/repos/select', {
           method: 'POST',
 
           headers: {
@@ -148,15 +118,16 @@
           },
 
           body: JSON.stringify({
-            repoFullName
+            repoFullName: repoFullName
           })
         })
 
-        const data = await res.json()
+        var data = await res.json()
 
         if (data.success) {
 
-          btn.textContent = '✅ Bot Enabled'
+          btn.textContent = 'Bot Enabled'
+
           btn.style.background = '#22c55e'
 
           status.textContent =
@@ -167,21 +138,23 @@
         } else {
 
           btn.disabled = false
-          btn.textContent = '🤖 Enable Bot'
+
+          btn.textContent = 'Enable Bot'
 
           status.textContent =
-            '❌ Error: ' + data.message
+            'Error: ' + data.message
 
           status.style.color = '#ef4444'
         }
 
-      } catch (err) {
+      } catch(err) {
 
         btn.disabled = false
-        btn.textContent = '🤖 Enable Bot'
+
+        btn.textContent = 'Enable Bot'
 
         status.textContent =
-          '❌ Network error. Please try again.'
+          'Network error. Please try again.'
 
         status.style.color = '#ef4444'
       }
@@ -191,4 +164,3 @@
 
 </body>
 </html>
-
