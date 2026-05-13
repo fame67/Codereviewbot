@@ -7,10 +7,7 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
 })
 
-<<<<<<< HEAD
-// Export is already here — no need for module.exports below
-=======
->>>>>>> 928a1bf (Updated dashboard UI and improved upload flow)
+928a1bf (Updated dashboard UI and improved upload flow)
 export async function reviewPR(payload) {
   const pullRequest = payload.pull_request
   const repository  = payload.repository
