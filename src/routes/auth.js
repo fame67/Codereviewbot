@@ -32,7 +32,8 @@ export async function authRoutes(app) {
     // Callback mein verify karenge
     const state = Math.random().toString(36).slice(2)
     req.session.oauthState = state
-    githubAuthUrl.searchParams.set('state', state)
+    githubAuthUrl.searchParams.set('scope', 'repo read:user admin:repo_hook')
+
 
     return reply.redirect(githubAuthUrl.toString())
   })
