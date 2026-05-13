@@ -7,14 +7,10 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
 })
 
-928a1bf (Updated dashboard UI and improved upload flow)
 export async function reviewPR(payload) {
   const pullRequest = payload.pull_request
   const repository  = payload.repository
 
-<<<<<<< HEAD
-=======
-  // ✅ Ab har repo ka apna token use hoga
   const token = getToken(repository.full_name)
 
   if (!token) {
@@ -22,7 +18,6 @@ export async function reviewPR(payload) {
     return
   }
 
->>>>>>> 928a1bf (Updated dashboard UI and improved upload flow)
   console.log(`[Bot] Review started: PR #${pullRequest.number} in ${repository.full_name}`)
 
   const rawDiff = await fetchDiff(
@@ -175,11 +170,4 @@ function formatComment(issue) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
-<<<<<<< HEAD
 }
-
-// ❌ NO module.exports — this file is an ES Module
-// ✅ Already exported above with the function: export async function reviewPR
-=======
-}
->>>>>>> 928a1bf (Updated dashboard UI and improved upload flow)
