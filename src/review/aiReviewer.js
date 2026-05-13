@@ -1,17 +1,31 @@
 import Groq from 'groq-sdk'
 import { fetchDiff, parseDiffIntoChunks } from './diffParser.js'
 import { postReviewComments, postGeneralComment } from '../github/githubClient.js'
+import { getToken } from '../db/tokenStore.js'
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
 })
 
+<<<<<<< HEAD
 // Export is already here — no need for module.exports below
+=======
+>>>>>>> 928a1bf (Updated dashboard UI and improved upload flow)
 export async function reviewPR(payload) {
   const pullRequest = payload.pull_request
   const repository  = payload.repository
-  const token       = process.env.GITHUB_TOKEN
 
+<<<<<<< HEAD
+=======
+  // ✅ Ab har repo ka apna token use hoga
+  const token = getToken(repository.full_name)
+
+  if (!token) {
+    console.error(`[Bot] No token found for ${repository.full_name} — skipping`)
+    return
+  }
+
+>>>>>>> 928a1bf (Updated dashboard UI and improved upload flow)
   console.log(`[Bot] Review started: PR #${pullRequest.number} in ${repository.full_name}`)
 
   const rawDiff = await fetchDiff(
@@ -164,7 +178,11 @@ function formatComment(issue) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
+<<<<<<< HEAD
 }
 
 // ❌ NO module.exports — this file is an ES Module
 // ✅ Already exported above with the function: export async function reviewPR
+=======
+}
+>>>>>>> 928a1bf (Updated dashboard UI and improved upload flow)

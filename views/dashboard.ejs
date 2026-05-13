@@ -12,18 +12,24 @@
   <!-- Navbar -->
   <nav class="navbar">
     <div class="nav-brand">🤖 CodeReviewBot</div>
+
     <div class="nav-user">
       <img src="<%= user.avatarUrl %>" alt="avatar" class="avatar">
+
       <span><%= user.name || user.login %></span>
-      <a href="/auth/logout" class="btn-logout">Logout</a>
+
+      <a href="/auth/logout" class="btn-logout">
+        Logout
+      </a>
     </div>
   </nav>
 
+  <!-- Dashboard -->
   <div class="dashboard">
 
-    <!-- Header -->
     <div class="dash-header">
       <h1>Your Repositories</h1>
+<<<<<<< HEAD
       <p>Enable the bot on any repository — the webhook will be configured automatically</p>
     </div>
 
@@ -41,30 +47,44 @@
     </div>
 
     <!-- Repositories list -->
+=======
+      <p>Enable the bot on any repository — webhook will be configured automatically.</p>
+    </div>
+
+    <!-- Repositories -->
+>>>>>>> 928a1bf (Updated dashboard UI and improved upload flow)
     <div class="repos-grid">
+
       <% repos.forEach(repo => { %>
-        <div class="repo-card">
+
+        <div class="repo-card" id="card-<%= repo.id %>">
+
           <div class="repo-header">
+
             <div class="repo-name">
-              <% if (repo.isPrivate) { %>
-                🔒
-              <% } else { %>
-                📁
-              <% } %>
+              <%= repo.isPrivate ? '🔒' : '📁' %>
+
               <a href="<%= repo.url %>" target="_blank">
                 <%= repo.name %>
               </a>
             </div>
+
             <% if (repo.language) { %>
-              <span class="lang-badge"><%= repo.language %></span>
+              <span class="lang-badge">
+                <%= repo.language %>
+              </span>
             <% } %>
+
           </div>
 
           <% if (repo.description) { %>
-            <p class="repo-desc"><%= repo.description %></p>
+            <p class="repo-desc">
+              <%= repo.description %>
+            </p>
           <% } %>
 
           <div class="repo-footer">
+<<<<<<< HEAD
             <span class="repo-updated">Updated: <%= repo.updatedAt %></span>
 
             <a
@@ -78,8 +98,96 @@
         </div>
       <% }) %>
     </div>
+=======
+>>>>>>> 928a1bf (Updated dashboard UI and improved upload flow)
 
+            <span class="repo-updated">
+              Updated: <%= repo.updatedAt %>
+            </span>
+
+            <!-- Enable Bot Button -->
+            <button
+              class="btn-enable"
+              id="btn-<%= repo.id %>"
+              onclick="enableBot('<%= repo.fullName %>', '<%= repo.id %>')"
+            >
+              🤖 Enable Bot
+            </button>
+
+          </div>
+
+          <!-- Status Message -->
+          <div class="status-msg" id="status-<%= repo.id %>"></div>
+
+        </div>
+
+      <% }) %>
+
+    </div>
   </div>
+
+  <script>
+
+    async function enableBot(repoFullName, repoId) {
+
+      const btn = document.getElementById('btn-' + repoId)
+      const status = document.getElementById('status-' + repoId)
+
+      // Loading State
+      btn.disabled = true
+      btn.textContent = '⏳ Setting up...'
+      status.textContent = ''
+
+      try {
+
+        const res = await fetch('/repos/select', {
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify({
+            repoFullName
+          })
+        })
+
+        const data = await res.json()
+
+        if (data.success) {
+
+          btn.textContent = '✅ Bot Enabled'
+          btn.style.background = '#22c55e'
+
+          status.textContent =
+            'Webhook configured successfully! Open a PR and the bot will review it automatically.'
+
+          status.style.color = '#22c55e'
+
+        } else {
+
+          btn.disabled = false
+          btn.textContent = '🤖 Enable Bot'
+
+          status.textContent =
+            '❌ Error: ' + data.message
+
+          status.style.color = '#ef4444'
+        }
+
+      } catch (err) {
+
+        btn.disabled = false
+        btn.textContent = '🤖 Enable Bot'
+
+        status.textContent =
+          '❌ Network error. Please try again.'
+
+        status.style.color = '#ef4444'
+      }
+    }
+
+  </script>
 
 </body>
 </html>
